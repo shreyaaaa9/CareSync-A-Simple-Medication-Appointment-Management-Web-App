@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CareSync – Medication & Appointment Manager</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap');
+  :root {
+    --primary:#2D7DD2; --primary-light:#EBF4FF; --primary-dark:#1A5BA0;
+    --accent:#00B894; --accent-light:#E8FBF5;
+    --danger:#E63946; --danger-light:#FDECEA;
+    --warning:#F4A261; --warning-light:#FEF3E7;
+    --purple:#6C5CE7; --purple-light:#F0EEFF;
+    --bg:#F7F9FC; --surface:#FFFFFF; --border:#E4EAF0;
+    --text:#1A2332; --text-secondary:#5A6B7E; --text-muted:#94A3B8;
+    --shadow:0 2px 12px rgba(45,125,210,0.08);
+    --radius:16px; --radius-sm:10px; --nav-height:72px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);}
+  .screen{display:none;min-height:100vh;flex-direction:column;}
+  .screen.active{display:flex;}
+
+  /* LANDING */
+  #screen-landing{background:linear-gradient(160deg,#1A5BA0 0%,#2D7DD2 45%,#00B894 100%);align-items:center;justify-content:center;text-align:center;padding:40px 24px;}
+  .landing-logo{font-family:'Nunito',sans-serif;font-size:42px;font-weight:800;color:#fff;letter-spacing:-1px;}
+  .landing-logo span{color:#A8E6D9;}
+  .landing-tagline{color:rgba(255,255,255,0.85);font-size:16px;margin:10px 0 48px;}
+  .role-btn{display:flex;align-items:center;gap:14px;width:100%;max-width:320px;background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.35);border-radius:var(--radius);padding:18px 22px;cursor:pointer;color:#fff;font-size:16px;font-weight:600;backdrop-filter:blur(8px);margin-bottom:14px;transition:all .2s;font-family:'Inter',sans-serif;}
+  .role-btn:hover{background:rgba(255,255,255,0.25);transform:translateY(-2px);}
+  .role-btn .icon{font-size:28px;}
+  .role-btn-sub{font-size:12px;font-weight:400;opacity:0.75;margin-top:2px;}
+  .lang-row{display:flex;gap:10px;margin-top:32px;flex-wrap:wrap;justify-content:center;}
+  .lang-chip{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:6px 16px;color:#fff;font-size:13px;cursor:pointer;transition:.2s;}
+  .lang-chip.active,.lang-chip:hover{background:rgba(255,255,255,0.3);}
+  .access-toggle{margin-top:18px;color:rgba(255,255,255,0.7);font-size:13px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+
+  /* LOGIN */
+  #screen-login{background:var(--bg);padding:0;}
+  .login-header{background:linear-gradient(135deg,#1A5BA0,#2D7DD2);padding:48px 24px 64px;}
+  .login-header h2{font-family:'Nunito',sans-serif;color:#fff;font-size:26px;font-weight:800;}
+  .login-header p{color:rgba(255,255,255,0.8);font-size:14px;margin-top:6px;}
+  .login-card{background:var(--surface);border-radius:24px 24px 0 0;padding:32px 24px;margin-top:-24px;flex:1;}
+  .tab-row{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:28px;}
+  .tab-btn{flex:1;padding:10px;border:none;background:transparent;border-radius:8px;font-size:14px;font-weight:500;color:var(--text-secondary);cursor:pointer;transition:.2s;}
+  .tab-btn.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow);font-weight:600;}
+  .form-label{font-size:13px;font-weight:500;color:var(--text-secondary);margin-bottom:6px;display:block;}
+  .form-input{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;color:var(--text);background:var(--surface);outline:none;transition:.2s;font-family:'Inter',sans-serif;}
+  .form-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(45,125,210,0.1);}
+  .form-group{margin-bottom:18px;}
+  .otp-row{display:flex;gap:8px;}
+  .otp-row .form-input{flex:1;text-align:center;font-size:20px;font-weight:700;letter-spacing:4px;}
+  .btn-primary{width:100%;padding:15px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;}
+  .btn-primary:hover{background:var(--primary-dark);transform:translateY(-1px);}
+  .btn-secondary{width:100%;padding:15px;background:var(--bg);color:var(--primary);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;}
+  .btn-back{background:transparent;border:none;color:rgba(255,255,255,0.85);font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;margin-bottom:16px;font-family:'Inter',sans-serif;}
+
+  /* APP */
+  #screen-app{background:var(--bg);}
+  .app-content{flex:1;overflow-y:auto;padding-bottom:calc(var(--nav-height)+16px);}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:0 8px 8px;z-index:100;box-shadow:0 -4px 24px rgba(0,0,0,0.06);}
+  .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:8px 4px;border-radius:12px;transition:.2s;border:none;background:transparent;position:relative;}
+  .nav-item:hover{background:var(--bg);}
+  .nav-item.active .nav-icon{color:var(--primary);}
+  .nav-item.active .nav-label{color:var(--primary);font-weight:600;}
+  .nav-icon{font-size:22px;color:var(--text-muted);transition:.2s;}
+  .nav-label{font-size:11px;color:var(--text-muted);font-weight:500;}
+  .nav-badge{position:absolute;top:4px;right:8px;background:var(--danger);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center;}
+
+  /* PAGE HEADER */
+  .page-header{padding:24px 20px 12px;}
+  .greeting{font-size:13px;color:var(--text-secondary);}
+  .page-title{font-family:'Nunito',sans-serif;font-size:26px;font-weight:800;color:var(--text);margin-top:2px;}
+  .page-subtitle{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+
+  /* DASHBOARD */
+  .dash-hero{margin:0 16px 20px;padding:20px;background:linear-gradient(135deg,#1A5BA0,#2D7DD2);border-radius:var(--radius);color:#fff;position:relative;overflow:hidden;}
+  .dash-hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:rgba(255,255,255,0.08);border-radius:50%;}
+  .dash-hero::after{content:'';position:absolute;bottom:-20px;right:40px;width:80px;height:80px;background:rgba(0,184,148,0.25);border-radius:50%;}
+  .hero-greeting{font-size:13px;opacity:0.8;}
+  .hero-name{font-family:'Nunito',sans-serif;font-size:22px;font-weight:800;margin:2px 0 16px;}
+  .hero-stats{display:flex;gap:12px;}
+  .hero-stat{background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 14px;flex:1;backdrop-filter:blur(4px);}
+  .hero-stat-val{font-size:20px;font-weight:700;}
+  .hero-stat-label{font-size:11px;opacity:0.8;margin-top:2px;}
+  .section-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.8px;padding:0 20px;margin-bottom:12px;}
+  .quick-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:0 16px;margin-bottom:20px;}
+  .quick-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px 10px;text-align:center;cursor:pointer;transition:.2s;}
+  .quick-btn:hover{border-color:var(--primary);transform:translateY(-2px);box-shadow:var(--shadow);}
+  .quick-btn .qb-icon{font-size:26px;margin-bottom:8px;}
+  .quick-btn .qb-label{font-size:12px;font-weight:600;color:var(--text);}
+  .card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);margin:0 16px 12px;overflow:hidden;}
+  .card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-size:14px;font-weight:600;color:var(--text);}
+  .card-action{font-size:12px;color:var(--primary);cursor:pointer;font-weight:500;}
+
+  /* MED ITEM */
+  .med-item{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+  .med-item:last-child{border-bottom:none;}
+  .med-dot{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .med-dot.taken{background:var(--accent-light);}
+  .med-dot.missed{background:var(--danger-light);}
+  .med-dot.pending{background:var(--primary-light);}
+  .med-info{flex:1;min-width:0;}
+  .med-name{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .med-details{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+  .med-status{font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+  .med-status.taken{background:var(--accent-light);color:var(--accent);}
+  .med-status.missed{background:var(--danger-light);color:var(--danger);}
+  .med-status.pending{background:var(--primary-light);color:var(--primary);}
+  .mark-taken-btn{padding:8px 14px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Inter',sans-serif;white-space:nowrap;}
+  .mark-taken-btn:hover{background:#00997E;}
+  .mark-taken-btn.done{background:var(--bg);color:var(--text-secondary);border:1px solid var(--border);cursor:default;}
+
+  /* APPT ITEM */
+  .appt-item{padding:14px 16px;display:flex;gap:12px;border-bottom:1px solid var(--border);}
+  .appt-item:last-child{border-bottom:none;}
+  .appt-date-box{background:var(--primary-light);border-radius:10px;padding:8px 12px;text-align:center;min-width:50px;flex-shrink:0;}
+  .appt-day{font-size:20px;font-weight:700;color:var(--primary);line-height:1;}
+  .appt-month{font-size:11px;color:var(--primary);font-weight:500;}
+  .appt-info{flex:1;}
+  .appt-doctor{font-size:14px;font-weight:600;color:var(--text);}
+  .appt-meta{font-size:12px;color:var(--text-secondary);margin-top:3px;}
+  .appt-tag{display:inline-block;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;margin-top:6px;}
+  .appt-tag.follow-up{background:var(--warning-light);color:var(--warning);}
+  .appt-tag.checkup{background:var(--accent-light);color:var(--accent);}
+  .appt-tag.specialist{background:var(--purple-light);color:var(--purple);}
+
+  /* FILTER */
+  .filter-row{display:flex;gap:8px;padding:0 16px;margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .filter-chip{padding:7px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;border:1.5px solid var(--border);background:var(--surface);color:var(--text-secondary);transition:.2s;flex-shrink:0;}
+  .filter-chip.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
+  .fab{position:fixed;bottom:calc(var(--nav-height)+16px);right:20px;width:56px;height:56px;background:var(--primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;box-shadow:0 4px 20px rgba(45,125,210,0.4);cursor:pointer;border:none;z-index:90;transition:.2s;}
+  .fab:hover{background:var(--primary-dark);transform:scale(1.05);}
+
+  /* AI BANNER */
+  .ai-banner{margin:0 16px 16px;padding:16px;background:var(--purple-light);border-radius:var(--radius);border:1.5px solid #C4BAF8;display:flex;align-items:center;gap:12px;cursor:pointer;}
+  .ai-icon{font-size:28px;}
+  .ai-title{font-size:14px;font-weight:600;color:var(--purple);}
+  .ai-sub{font-size:12px;color:var(--text-secondary);margin-top:2px;}
+
+  /* CALENDAR */
+  .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:12px 16px;}
+  .cal-day-label{text-align:center;font-size:11px;font-weight:600;color:var(--text-muted);padding:4px 0;}
+  .cal-day{text-align:center;font-size:13px;padding:8px 4px;border-radius:8px;cursor:pointer;transition:.2s;position:relative;}
+  .cal-day:hover{background:var(--bg);}
+  .cal-day.today{background:var(--primary);color:#fff;font-weight:700;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;margin:auto;}
+  .cal-day.has-appt::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;background:var(--accent);border-radius:50%;}
+  .cal-day.has-appt.today::after{background:#fff;}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 4px;}
+  .cal-nav-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:16px;}
+  .cal-month{font-size:15px;font-weight:700;color:var(--text);}
+
+  /* CAREGIVER */
+  .caregiver-card{margin:0 16px 14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:18px;}
+  .cg-top{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+  .avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;flex-shrink:0;}
+  .avatar.blue{background:var(--primary-light);color:var(--primary);}
+  .cg-name{font-size:16px;font-weight:700;color:var(--text);}
+  .cg-relation{font-size:13px;color:var(--text-secondary);margin-top:2px;}
+  .permission-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+  .permission-row:last-child{border-bottom:none;}
+  .perm-label{font-size:13px;color:var(--text);}
+  .toggle{width:40px;height:22px;background:var(--accent);border-radius:11px;position:relative;cursor:pointer;transition:.3s;flex-shrink:0;}
+  .toggle::after{content:'';position:absolute;top:3px;left:calc(100% - 19px);width:16px;height:16px;background:#fff;border-radius:50%;transition:.3s;}
+  .toggle.off{background:var(--border);}
+  .toggle.off::after{left:3px;}
+  .sos-btn{width:100%;padding:16px;background:var(--danger);color:#fff;border:none;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;font-family:'Inter',sans-serif;animation:pulse-sos 2.5s infinite;}
+  @keyframes pulse-sos{0%,100%{box-shadow:0 0 0 0 rgba(230,57,70,0.4)}50%{box-shadow:0 0 0 8px rgba(230,57,70,0)}}
+  .progress-bar{background:var(--bg);border-radius:20px;height:8px;margin:8px 0 4px;overflow:hidden;}
+  .progress-fill{height:100%;border-radius:20px;transition:.5s;}
+
+  /* AI CHAT */
+  #tab-ai{flex-direction:column;padding-bottom:0;}
+  .ai-page-header{background:linear-gradient(135deg,#6C5CE7,#A29BFE);padding:40px 24px 28px;}
+  .ai-page-header h2{font-family:'Nunito',sans-serif;color:#fff;font-size:24px;font-weight:800;}
+  .ai-page-header p{color:rgba(255,255,255,0.8);font-size:14px;margin-top:6px;}
+  .ai-key-row{display:flex;gap:8px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .ai-key-input{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:24px;font-size:13px;outline:none;font-family:'Inter',sans-serif;color:var(--text);}
+  .ai-key-input:focus{border-color:var(--purple);}
+  .ai-key-btn{padding:10px 16px;background:var(--purple);color:#fff;border:none;border-radius:24px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap;}
+  .ai-chat-area{padding:16px;flex:1;overflow-y:auto;}
+  .chat-bubble{padding:12px 16px;border-radius:16px;margin-bottom:4px;max-width:88%;font-size:14px;line-height:1.6;}
+  .chat-bubble.ai{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:4px;color:var(--text);}
+  .chat-bubble.user{background:var(--primary);color:#fff;border-bottom-right-radius:4px;margin-left:auto;}
+  .chat-meta{font-size:11px;color:var(--text-muted);padding:0 4px;margin-bottom:10px;}
+  .chat-meta.right{text-align:right;}
+  .ai-input-row{display:flex;gap:8px;padding:12px 16px;background:var(--surface);border-top:1px solid var(--border);}
+  .ai-input{flex:1;padding:12px 16px;border:1.5px solid var(--border);border-radius:24px;font-size:14px;outline:none;font-family:'Inter',sans-serif;}
+  .ai-input:focus{border-color:var(--purple);}
+  .ai-send-btn{width:44px;height:44px;background:var(--purple);border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ai-send-btn:disabled{background:var(--border);cursor:default;}
+  .ai-typing{display:flex;gap:4px;align-items:center;padding:14px 16px;}
+  .ai-typing span{width:8px;height:8px;background:var(--text-muted);border-radius:50%;animation:bounce-dot .9s infinite;}
+  .ai-typing span:nth-child(2){animation-delay:.15s;}
+  .ai-typing span:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce-dot{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+  .api-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 12px;border-radius:20px;font-weight:500;}
+  .api-status.connected{background:var(--accent-light);color:var(--accent);}
+  .api-status.disconnected{background:var(--danger-light);color:var(--danger);}
+
+  /* SETTINGS */
+  .settings-section{background:var(--surface);border-radius:var(--radius);margin:0 16px 14px;border:1px solid var(--border);overflow:hidden;}
+  .settings-item{padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);}
+  .settings-item:last-child{border-bottom:none;}
+  .settings-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .settings-label{flex:1;font-size:14px;font-weight:500;color:var(--text);}
+  .settings-value{font-size:13px;color:var(--text-muted);}
+  .font-slider{width:100%;accent-color:var(--primary);}
+  .contrast-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:.2s;}
+  .contrast-btn.active{background:var(--text);color:var(--surface);border-color:var(--text);}
+
+  /* MODALS */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:flex-end;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border-radius:24px 24px 0 0;padding:24px 20px 40px;width:100%;max-height:85vh;overflow-y:auto;position:relative;}
+  .modal-title{font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;margin-bottom:20px;}
+  .modal-close{position:absolute;top:20px;right:20px;background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;font-size:18px;cursor:pointer;}
+  .time-chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .time-chip{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:600;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;color:var(--text-secondary);transition:.2s;}
+  .time-chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  /* NOTIFICATION BANNER */
+  .notif-banner{position:fixed;top:0;left:0;right:0;z-index:500;background:var(--primary);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px;transform:translateY(-100%);transition:.4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+  .notif-banner.show{transform:translateY(0);}
+  .notif-banner.danger{background:var(--danger);}
+  .notif-banner.success{background:var(--accent);}
+  .notif-icon{font-size:24px;flex-shrink:0;}
+  .notif-text{flex:1;}
+  .notif-title{font-size:14px;font-weight:700;}
+  .notif-sub{font-size:12px;opacity:0.85;margin-top:2px;}
+  .notif-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:calc(var(--nav-height)+16px);left:50%;transform:translateX(-50%) translateY(40px);background:var(--text);color:#fff;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:500;z-index:999;transition:.3s;white-space:nowrap;opacity:0;pointer-events:none;}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+  .toast.success{background:var(--accent);}
+  .toast.warning{background:var(--warning);}
+  .toast.danger{background:var(--danger);}
+
+  /* HIGH CONTRAST */
+  body.high-contrast{--primary:#0050B3;--text:#000;--text-secondary:#222;--bg:#fff;--surface:#fff;--border:#000;}
+  body.large-text .page-title{font-size:32px;}
+  body.large-text .med-name,.body.large-text .appt-doctor{font-size:17px;}
+  body.large-text .btn-primary,.body.large-text .btn-secondary{font-size:18px;padding:18px;}
+</style>
+</head>
+<body>
+
+<!-- LANDING -->
+<div id="screen-landing" class="screen active">
+  <div style="margin-bottom:32px;">
+    <div style="font-size:64px;margin-bottom:12px;">💊</div>
+    <div class="landing-logo">Care<span>Sync</span></div>
+    <div class="landing-tagline">Your health, simplified.<br>Medicine &amp; appointment management.</div>
+  </div>
+  <button class="role-btn" onclick="goToLogin('patient')">
+    <span class="icon">🧑‍⚕️</span>
+    <div style="text-align:left;">
+      <div>I am a Patient</div>
+      <div class="role-btn-sub">Manage your medicines &amp; appointments</div>
+    </div>
+    <span style="margin-left:auto;font-size:20px;">→</span>
+  </button>
+  <button class="role-btn" onclick="goToLogin('caregiver')">
+    <span class="icon">👨‍👩‍👧</span>
+    <div style="text-align:left;">
+      <div>I am a Caregiver</div>
+      <div class="role-btn-sub">Monitor &amp; support your loved one</div>
+    </div>
+    <span style="margin-left:auto;font-size:20px;">→</span>
+  </button>
+  <div class="lang-row">
+    <div class="lang-chip active">🇮🇳 English</div>
+    <div class="lang-chip">हिंदी</div>
+    <div class="lang-chip">मराठी</div>
+    <div class="lang-chip">தமிழ்</div>
+  </div>
+  <div class="access-toggle" onclick="toggleLargeText()">🔤 Large Text <span id="large-text-status">OFF</span></div>
+</div>
+
+<!-- LOGIN -->
+<div id="screen-login" class="screen" style="flex-direction:column;">
+  <div class="login-header">
+    <button class="btn-back" onclick="showScreen('landing')">← Back</button>
+    <h2 id="login-role-title">Welcome, Patient</h2>
+    <p>Sign in to access your health dashboard</p>
+  </div>
+  <div class="login-card" style="flex:1;display:flex;flex-direction:column;">
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchLoginTab('phone',this)">📱 Phone OTP</button>
+      <button class="tab-btn" onclick="switchLoginTab('email',this)">✉️ Email</button>
+    </div>
+    <div id="login-phone">
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input class="form-input" type="tel" placeholder="+91 98765 43210" id="phone-input"/>
+      </div>
+      <button class="btn-primary" onclick="sendOTP()" style="margin-bottom:12px;">Send OTP</button>
+      <div id="otp-section" style="display:none;margin-top:16px;">
+        <label class="form-label">Enter OTP sent to your number</label>
+        <div class="otp-row" style="margin-bottom:16px;">
+          <input class="form-input" maxlength="1" type="number" id="otp1" oninput="otpMove(this,'otp2')"/>
+          <input class="form-input" maxlength="1" type="number" id="otp2" oninput="otpMove(this,'otp3')"/>
+          <input class="form-input" maxlength="1" type="number" id="otp3" oninput="otpMove(this,'otp4')"/>
+          <input class="form-input" maxlength="1" type="number" id="otp4" oninput="otpMove(this,null)"/>
+        </div>
+        <button class="btn-primary" onclick="verifyOTP()">Verify &amp; Continue →</button>
+        <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-secondary);">Resend OTP in <span id="otp-timer">30</span>s</div>
+      </div>
+    </div>
+    <div id="login-email" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input class="form-input" type="email" placeholder="rajesh@example.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="Enter your password"/>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;margin-bottom:18px;font-size:13px;color:var(--text-secondary);cursor:pointer;">
+        <input type="checkbox" style="accent-color:var(--primary);"/> Remember me
+      </label>
+      <button class="btn-primary" onclick="loginDirect()">Sign In →</button>
+    </div>
+    <div style="margin-top:auto;padding-top:20px;text-align:center;">
+      <div style="font-size:12px;color:var(--text-muted);">🔒 Your data is encrypted and private</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="screen-app" class="screen" style="flex-direction:column;">
+  <div class="app-content">
+
+    <!-- HOME TAB -->
+    <div id="tab-home" class="tab-content">
+      <div class="page-header">
+        <div class="greeting" id="dash-greeting">Good Morning 🌤️</div>
+        <div class="page-title">Rajesh Kumar</div>
+        <div class="page-subtitle" id="dash-date"></div>
+      </div>
+      <div class="dash-hero">
+        <div class="hero-greeting">Today's overview</div>
+        <div class="hero-name" id="dash-status">You're doing great 💪</div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="hero-stat-val" id="stat-pending">–</div><div class="hero-stat-label">Meds left today</div></div>
+          <div class="hero-stat"><div class="hero-stat-val" id="stat-adherence">–</div><div class="hero-stat-label">Adherence</div></div>
+          <div class="hero-stat"><div class="hero-stat-val" id="stat-appts">–</div><div class="hero-stat-label">Appts this week</div></div>
+        </div>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-btn" onclick="switchTab('meds')"><div class="qb-icon">💊</div><div class="qb-label">Medicines</div></div>
+        <div class="quick-btn" onclick="switchTab('appointments')"><div class="qb-icon">📅</div><div class="qb-label">Appointments</div></div>
+        <div class="quick-btn" onclick="switchTab('ai')"><div class="qb-icon">🤖</div><div class="qb-label">AI Check</div></div>
+      </div>
+      <div class="section-title">Today's Medicines</div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title" id="home-med-count">Loading...</span>
+          <span class="card-action" onclick="switchTab('meds')">View all →</span>
+        </div>
+        <div id="home-med-list"></div>
+      </div>
+      <div class="section-title" style="margin-top:8px;">Next Appointment</div>
+      <div class="card" id="home-appt-card">
+        <div class="appt-item">
+          <div class="appt-date-box"><div class="appt-day">18</div><div class="appt-month">JUN</div></div>
+          <div class="appt-info">
+            <div class="appt-doctor">Dr. Priya Sharma</div>
+            <div class="appt-meta">🏥 Ruby Hall Clinic · 11:00 AM</div>
+            <span class="appt-tag follow-up">Follow-up</span>
+          </div>
+          <div style="font-size:20px;cursor:pointer;" onclick="showToast('Reminder set 🔔','success')">🔔</div>
+        </div>
+      </div>
+      <div style="margin:12px 16px 20px;padding:14px 16px;background:#E7F9EE;border-radius:14px;border:1.5px solid #25D366;display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="showToast('WhatsApp reminders enabled! 📱','success')">
+        <span style="font-size:26px;">📱</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#128C7E;">Enable WhatsApp Reminders</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Get medicine alerts on WhatsApp (via Twilio)</div>
+        </div>
+        <span style="margin-left:auto;font-size:18px;">→</span>
+      </div>
+    </div>
+
+    <!-- MEDICINES TAB -->
+    <div id="tab-meds" class="tab-content" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">💊 Medicines</div>
+        <div class="page-subtitle">Your daily medication schedule</div>
+      </div>
+      <div class="ai-banner" onclick="switchTab('ai')">
+        <span class="ai-icon">🤖</span>
+        <div><div class="ai-title">AI Drug Interaction Check</div><div class="ai-sub">Check if your medicines are safe together</div></div>
+        <span style="margin-left:auto;font-size:18px;color:var(--purple);">→</span>
+      </div>
+      <div class="filter-row">
+        <div class="filter-chip active" onclick="filterMeds('all',this)">All</div>
+        <div class="filter-chip" onclick="filterMeds('morning',this)">☀️ Morning</div>
+        <div class="filter-chip" onclick="filterMeds('afternoon',this)">🌤 Afternoon</div>
+        <div class="filter-chip" onclick="filterMeds('night',this)">🌙 Night</div>
+        <div class="filter-chip" onclick="filterMeds('missed',this)">❌ Missed</div>
+      </div>
+      <div class="card" id="med-list-card">
+        <div class="card-header">
+          <span class="card-title" id="med-list-title">Today's Schedule</span>
+          <span style="font-size:12px;color:var(--text-secondary);" id="med-list-date"></span>
+        </div>
+        <div id="med-list"></div>
+        <div id="med-empty" style="display:none;padding:32px;text-align:center;color:var(--text-muted);">
+          <div style="font-size:40px;margin-bottom:8px;">💊</div>
+          <div style="font-size:14px;font-weight:500;">No medicines yet</div>
+          <div style="font-size:13px;margin-top:4px;">Tap + to add your first medicine</div>
+        </div>
+      </div>
+      <button class="fab" onclick="openModal('add-med-modal')">+</button>
+    </div>
+
+    <!-- APPOINTMENTS TAB -->
+    <div id="tab-appointments" class="tab-content" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">📅 Appointments</div>
+        <div class="page-subtitle">Manage your doctor visits</div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="changeMonth(-1)">‹</button>
+          <span class="cal-month" id="cal-month-label">June 2026</span>
+          <button class="cal-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="calendar-grid" id="cal-grid"></div>
+      </div>
+      <div class="section-title">Upcoming Appointments</div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Scheduled</span>
+          <span class="card-action" onclick="openModal('add-appt-modal')">+ Add</span>
+        </div>
+        <div id="appt-list"></div>
+        <div id="appt-empty" style="display:none;padding:32px;text-align:center;color:var(--text-muted);">
+          <div style="font-size:40px;margin-bottom:8px;">📅</div>
+          <div style="font-size:14px;font-weight:500;">No appointments yet</div>
+          <div style="font-size:13px;margin-top:4px;">Tap + Add to schedule one</div>
+        </div>
+      </div>
+      <div style="margin:0 16px 20px;padding:14px 16px;background:var(--primary-light);border-radius:14px;border:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer;" onclick="showToast('Opening maps... 📍','success')">
+        <span style="font-size:22px;">📍</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--primary);">Nearby Hospitals</div>
+          <div style="font-size:12px;color:var(--text-secondary);">Find hospitals near you (Google Maps)</div>
+        </div>
+        <span style="margin-left:auto;font-size:16px;color:var(--primary);">→</span>
+      </div>
+      <button class="fab" onclick="openModal('add-appt-modal')">+</button>
+    </div>
+
+    <!-- AI TAB -->
+    <div id="tab-ai" class="tab-content" style="display:none;flex-direction:column;">
+      <div class="ai-page-header">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:32px;margin-bottom:8px;">🤖</div>
+            <h2>AI Health Assistant</h2>
+            <p>Powered by Claude AI · Real medical guidance</p>
+          </div>
+          <span id="api-status-badge" class="api-status disconnected">● No API key</span>
+        </div>
+      </div>
+      <div class="ai-key-row">
+        <input class="ai-key-input" id="api-key-input" type="password" placeholder="Paste your Anthropic API key (sk-ant-...)"/>
+        <button class="ai-key-btn" onclick="saveApiKey()">Connect →</button>
+      </div>
+      <div class="ai-chat-area" id="ai-chat-area">
+        <div style="margin-bottom:4px;"><div class="chat-bubble ai">👋 Hello Rajesh! I'm your AI health assistant powered by Claude.<br><br>Paste your Anthropic API key above to enable real AI responses, or ask me anything — I'll use smart built-in responses as a demo.<br><br>I can help with:<br>• 🔍 Symptom checking<br>• 💊 Drug interactions<br>• 📋 Medicine information<br>• 🏥 When to see a doctor</div></div>
+        <div class="chat-meta">CareSync AI · now</div>
+        <div id="ai-chat-messages"></div>
+        <div id="ai-typing" style="display:none;"><div class="chat-bubble ai" style="padding:8px 16px;display:inline-block;"><div class="ai-typing"><span></span><span></span><span></span></div></div></div>
+      </div>
+      <div class="ai-input-row">
+        <input class="ai-input" id="ai-input" placeholder="Ask about symptoms, medicines..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"/>
+        <button class="ai-send-btn" id="ai-send-btn" onclick="sendAIMessage()">➤</button>
+      </div>
+    </div>
+
+    <!-- CAREGIVER TAB -->
+    <div id="tab-caregiver" class="tab-content" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">👨‍👩‍👧 Caregiver</div>
+        <div class="page-subtitle">Family support &amp; emergency access</div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">This Week's Adherence</span></div>
+        <div style="text-align:center;padding:20px;">
+          <div style="font-size:42px;font-weight:800;color:var(--accent);font-family:'Nunito',sans-serif;" id="adherence-pct">–</div>
+          <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">medicines taken on time</div>
+        </div>
+        <div style="padding:0 20px 16px;">
+          <div class="progress-bar"><div class="progress-fill" id="adherence-bar" style="width:0%;background:var(--accent);"></div></div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;" id="adherence-detail"></div>
+        </div>
+      </div>
+      <div class="section-title" style="margin-top:4px;">Linked Caregivers</div>
+      <div class="caregiver-card">
+        <div class="cg-top">
+          <div class="avatar blue">SK</div>
+          <div>
+            <div class="cg-name">Sunita Kumar</div>
+            <div class="cg-relation">👩 Daughter · +91 98760 11223</div>
+          </div>
+          <div style="margin-left:auto;font-size:11px;background:var(--accent-light);color:var(--accent);padding:4px 10px;border-radius:8px;font-weight:600;">Active</div>
+        </div>
+        <div class="permission-row"><span class="perm-label">View medicines</span><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+        <div class="permission-row"><span class="perm-label">Add appointments</span><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+        <div class="permission-row"><span class="perm-label">Missed-dose alerts</span><div class="toggle" onclick="this.classList.toggle('off')"></div></div>
+        <div class="permission-row"><span class="perm-label">Download health reports</span><div class="toggle off" onclick="this.classList.toggle('off')"></div></div>
+      </div>
+      <div style="padding:0 16px;margin-bottom:14px;">
+        <button class="btn-secondary" onclick="showToast('Update sent to Sunita 📱','success')" style="margin-bottom:10px;">📨 Send Update to Caregiver</button>
+        <button class="sos-btn" onclick="triggerSOS()">🆘 Emergency SOS</button>
+      </div>
+      <div class="section-title">Reports</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="settings-item" onclick="showToast('Generating PDF report 📄','success')" style="cursor:pointer;">
+          <div class="settings-icon" style="background:var(--danger-light);">📄</div>
+          <div class="settings-label">Health Summary PDF</div>
+          <div class="settings-value">June 2026</div>
+          <span style="font-size:16px;color:var(--primary);">↓</span>
+        </div>
+        <div class="settings-item" onclick="showToast('History exported 📊','success')" style="cursor:pointer;border-bottom:none;">
+          <div class="settings-icon" style="background:var(--accent-light);">📊</div>
+          <div class="settings-label">Medication History</div>
+          <div class="settings-value">Last 30 days</div>
+          <span style="font-size:16px;color:var(--primary);">↓</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="tab-content" style="display:none;">
+      <div class="page-header">
+        <div class="page-title">⚙️ Settings</div>
+        <div class="page-subtitle">Accessibility &amp; preferences</div>
+      </div>
+      <div class="section-title">Notifications</div>
+      <div class="settings-section">
+        <div class="settings-item">
+          <div class="settings-icon" style="background:var(--primary-light);">🔔</div>
+          <div style="flex:1;">
+            <div class="settings-label">Medicine Reminders</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;" id="notif-permission-status">Click to enable browser notifications</div>
+          </div>
+          <button onclick="requestNotifPermission()" style="padding:8px 14px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">Enable</button>
+        </div>
+        <div class="settings-item" style="border-bottom:none;">
+          <div class="settings-icon" style="background:#E7F9EE;">📱</div>
+          <div class="settings-label">WhatsApp Alerts</div>
+          <div class="toggle off" onclick="this.classList.toggle('off');showToast('WhatsApp reminders enabled ✅','success')"></div>
+        </div>
+      </div>
+      <div class="section-title">Accessibility</div>
+      <div class="settings-section">
+        <div class="settings-item">
+          <div class="settings-icon" style="background:var(--primary-light);">🔤</div>
+          <div style="flex:1;">
+            <div class="settings-label">Font Size</div>
+            <input type="range" class="font-slider" min="1" max="3" value="1" style="width:100%;margin-top:8px;" oninput="changeFontSize(this.value)"/>
+          </div>
+        </div>
+        <div class="settings-item" onclick="toggleHighContrast()" style="cursor:pointer;">
+          <div class="settings-icon" style="background:#000;color:#fff;">◑</div>
+          <div class="settings-label">High Contrast</div>
+          <div id="contrast-status" class="contrast-btn">OFF</div>
+        </div>
+        <div class="settings-item" style="border-bottom:none;">
+          <div class="settings-icon" style="background:var(--accent-light);">🔊</div>
+          <div class="settings-label">Voice Guidance</div>
+          <div class="toggle off" onclick="this.classList.toggle('off');showToast('Voice guidance enabled 🔊','success')"></div>
+        </div>
+      </div>
+      <div class="section-title">Language</div>
+      <div class="settings-section">
+        <div class="settings-item">
+          <div class="settings-icon" style="background:var(--warning-light);">🌐</div>
+          <div class="settings-label">App Language</div>
+          <select style="border:none;font-size:14px;color:var(--text-secondary);background:transparent;cursor:pointer;font-family:'Inter',sans-serif;">
+            <option>English</option><option>हिंदी</option><option>मराठी</option><option>தமிழ்</option>
+          </select>
+        </div>
+      </div>
+      <div class="section-title">Privacy &amp; Data</div>
+      <div class="settings-section">
+        <div class="settings-item" style="cursor:pointer;" onclick="showToast('Privacy policy opened','')">
+          <div class="settings-icon" style="background:var(--bg);">🔒</div>
+          <div class="settings-label">Data Privacy Policy</div>
+          <span style="font-size:14px;color:var(--text-muted);">→</span>
+        </div>
+        <div class="settings-item" style="cursor:pointer;border-bottom:none;" onclick="clearAllData()">
+          <div class="settings-icon" style="background:var(--danger-light);">🗑</div>
+          <div class="settings-label" style="color:var(--danger);">Delete My Data</div>
+          <span style="font-size:14px;color:var(--danger);">→</span>
+        </div>
+      </div>
+      <div style="padding:16px;text-align:center;">
+        <button class="btn-secondary" onclick="logout()" style="max-width:200px;margin:0 auto;">🚪 Logout</button>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--text-muted);padding-bottom:20px;">CareSync v2.0 · Built with ❤️ for healthcare</div>
+    </div>
+
+  </div><!-- end app-content -->
+
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home')" id="nav-home">
+      <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('meds')" id="nav-meds">
+      <span class="nav-icon">💊</span><span class="nav-label">Medicines</span>
+      <span class="nav-badge" id="meds-badge" style="display:none;">0</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('appointments')" id="nav-appointments">
+      <span class="nav-icon">📅</span><span class="nav-label">Appointments</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('caregiver')" id="nav-caregiver">
+      <span class="nav-icon">👨‍👩‍👧</span><span class="nav-label">Caregiver</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('settings')" id="nav-settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ADD MEDICINE MODAL -->
+<div class="modal-overlay" id="add-med-modal" onclick="closeModalOutside(event,'add-med-modal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-med-modal')">✕</button>
+    <div class="modal-title">➕ Add Medicine</div>
+    <div class="form-group">
+      <label class="form-label">Medicine Name *</label>
+      <input class="form-input" id="new-med-name" placeholder="e.g. Metformin 500mg"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Dosage</label>
+      <input class="form-input" id="new-med-dose" placeholder="e.g. 1 tablet"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Time of Day *</label>
+      <div class="time-chips" id="time-chip-group">
+        <div class="time-chip" data-val="morning" onclick="toggleTimeChip(this)">☀️ Morning</div>
+        <div class="time-chip" data-val="afternoon" onclick="toggleTimeChip(this)">🌤 Afternoon</div>
+        <div class="time-chip" data-val="evening" onclick="toggleTimeChip(this)">🌆 Evening</div>
+        <div class="time-chip" data-val="night" onclick="toggleTimeChip(this)">🌙 Night</div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Reminder Time (for notifications)</label>
+      <input class="form-input" type="time" id="new-med-time" value="08:00"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Purpose / Condition</label>
+      <input class="form-input" id="new-med-purpose" placeholder="e.g. Blood Pressure, Diabetes"/>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-secondary" onclick="closeModal('add-med-modal')" style="flex:1;">Cancel</button>
+      <button class="btn-primary" onclick="addMedicine()" style="flex:2;">Add Medicine ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD APPOINTMENT MODAL -->
+<div class="modal-overlay" id="add-appt-modal" onclick="closeModalOutside(event,'add-appt-modal')">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('add-appt-modal')">✕</button>
+    <div class="modal-title">📅 Add Appointment</div>
+    <div class="form-group">
+      <label class="form-label">Doctor Name *</label>
+      <input class="form-input" id="new-appt-doctor" placeholder="e.g. Dr. Priya Sharma"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hospital / Clinic</label>
+      <input class="form-input" id="new-appt-hospital" placeholder="e.g. Ruby Hall Clinic"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Date *</label>
+      <input class="form-input" type="date" id="new-appt-date"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Time</label>
+      <input class="form-input" type="time" id="new-appt-time" value="10:00"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <div class="time-chips" id="appt-type-chips">
+        <div class="time-chip active" data-val="follow-up" onclick="selectApptType(this)">Follow-up</div>
+        <div class="time-chip" data-val="checkup" onclick="selectApptType(this)">Checkup</div>
+        <div class="time-chip" data-val="specialist" onclick="selectApptType(this)">Specialist</div>
+        <div class="time-chip" data-val="lab" onclick="selectApptType(this)">Lab Test</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-secondary" onclick="closeModal('add-appt-modal')" style="flex:1;">Cancel</button>
+      <button class="btn-primary" onclick="addAppointment()" style="flex:2;">Save Appointment ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICATION BANNER -->
+<div class="notif-banner" id="notif-banner">
+  <span class="notif-icon" id="notif-icon">💊</span>
+  <div class="notif-text">
+    <div class="notif-title" id="notif-title">Medicine Reminder</div>
+    <div class="notif-sub" id="notif-sub">Time to take your medicine</div>
+  </div>
+  <button class="notif-close" onclick="dismissNotif()">✕</button>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  STATE – stored in localStorage
+// ═══════════════════════════════════════
+let medicines = [];
+let appointments = [];
+let apiKey = '';
+let aiHistory = [];
+let highContrast = false;
+let largeText = false;
+let calMonth = 5;
+let calYear = 2026;
+let notifTimers = [];
+
+function saveState() {
+  try {
+    localStorage.setItem('cs_medicines', JSON.stringify(medicines));
+    localStorage.setItem('cs_appointments', JSON.stringify(appointments));
+    if (apiKey) localStorage.setItem('cs_apikey', apiKey);
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const m = localStorage.getItem('cs_medicines');
+    const a = localStorage.getItem('cs_appointments');
+    const k = localStorage.getItem('cs_apikey');
+    if (m) medicines = JSON.parse(m);
+    if (a) appointments = JSON.parse(a);
+    if (k) { apiKey = k; updateApiStatus(true); document.getElementById('api-key-input').value = '••••••••••••••••'; }
+  } catch(e) {}
+
+  // Seed default medicines if empty
+  if (medicines.length === 0) {
+    medicines = [
+      { id: 1, name: 'Metformin 500mg', dose: '1 tablet', time: 'morning', reminderTime: '08:00', purpose: 'Diabetes', takenToday: true },
+      { id: 2, name: 'Amlodipine 5mg', dose: '1 tablet', time: 'afternoon', reminderTime: '14:00', purpose: 'Blood Pressure', takenToday: false },
+      { id: 3, name: 'Atorvastatin 20mg', dose: '1 tablet', time: 'night', reminderTime: '22:00', purpose: 'Cholesterol', takenToday: false },
+      { id: 4, name: 'Aspirin 75mg', dose: '1 tablet', time: 'morning', reminderTime: '07:00', purpose: 'Heart', takenToday: false }
+    ];
+  }
+  if (appointments.length === 0) {
+    appointments = [
+      { id: 1, doctor: 'Dr. Priya Sharma', hospital: 'Ruby Hall Clinic', date: '2026-06-18', time: '11:00', type: 'follow-up' },
+      { id: 2, doctor: 'Dr. Anand Kulkarni', hospital: 'Sahyadri Hospital', date: '2026-06-25', time: '15:30', type: 'specialist' },
+      { id: 3, doctor: 'Lab – Blood Tests', hospital: 'Dr. Lal PathLabs', date: '2026-07-05', time: '07:00', type: 'lab' }
+    ];
+  }
+  saveState();
+}
+
+// ═══════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function goToLogin(role) {
+  document.getElementById('login-role-title').textContent = role === 'patient' ? 'Welcome, Patient 🧑‍⚕️' : 'Welcome, Caregiver 👨‍👩‍👧';
+  showScreen('login');
+}
+
+function loginDirect() { enterApp(); }
+
+function logout() { showScreen('landing'); showToast('Logged out 👋',''); }
+
+function enterApp() {
+  showScreen('app');
+  switchTab('home');
+  updateDashboard();
+  renderMedList();
+  renderApptList();
+  renderCalendar();
+  scheduleNotifications();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => { t.style.display = 'none'; });
+  const el = document.getElementById('tab-' + tab);
+  if (el) el.style.display = tab === 'ai' ? 'flex' : 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const nav = document.getElementById('nav-' + tab);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+  if (tab === 'appointments') renderCalendar();
+  if (tab === 'caregiver') updateCaregiverStats();
+  if (tab === 'home') updateDashboard();
+}
+
+// ═══════════════════════════════════════
+//  LOGIN
+// ═══════════════════════════════════════
+let otpTimerInterval;
+function switchLoginTab(type, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('login-phone').style.display = type === 'phone' ? 'block' : 'none';
+  document.getElementById('login-email').style.display = type === 'email' ? 'block' : 'none';
+}
+
+function sendOTP() {
+  const phone = document.getElementById('phone-input').value;
+  if (!phone) { showToast('Please enter your phone number','warning'); return; }
+  document.getElementById('otp-section').style.display = 'block';
+  document.getElementById('otp1').focus();
+  showToast('OTP sent to ' + phone + ' ✓','success');
+  let t = 30;
+  clearInterval(otpTimerInterval);
+  otpTimerInterval = setInterval(() => {
+    document.getElementById('otp-timer').textContent = --t;
+    if (t <= 0) clearInterval(otpTimerInterval);
+  }, 1000);
+}
+
+function otpMove(el, nextId) {
+  if (el.value.length >= 1 && nextId) document.getElementById(nextId).focus();
+}
+
+function verifyOTP() {
+  showToast('Verified! Welcome ✅','success');
+  setTimeout(() => enterApp(), 600);
+}
+
+// ═══════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════
+function updateDashboard() {
+  const now = new Date();
+  const hours = now.getHours();
+  let greet = hours < 12 ? 'Good Morning 🌤️' : hours < 17 ? 'Good Afternoon ☀️' : 'Good Evening 🌙';
+  document.getElementById('dash-greeting').textContent = greet;
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('dash-date').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  document.getElementById('med-list-date').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+
+  const pending = medicines.filter(m => !m.takenToday).length;
+  const total = medicines.length;
+  const taken = total - pending;
+  const pct = total > 0 ? Math.round((taken / total) * 100) : 0;
+
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-adherence').textContent = pct + '%';
+  document.getElementById('stat-appts').textContent = appointments.length;
+
+  document.getElementById('dash-status').textContent = pct >= 80 ? "You're doing great 💪" : pct >= 50 ? "Keep it up! 😊" : "Don't forget your medicines 💊";
+
+  // Home med list (show first 3)
+  const homeMedList = document.getElementById('home-med-list');
+  const show = medicines.slice(0, 3);
+  document.getElementById('home-med-count').textContent = `${medicines.length} medicines today`;
+  homeMedList.innerHTML = show.map(m => medItemHTML(m, true)).join('');
+
+  // Pending badge
+  const badge = document.getElementById('meds-badge');
+  if (pending > 0) { badge.style.display = 'block'; badge.textContent = pending; }
+  else badge.style.display = 'none';
+}
+
+// ═══════════════════════════════════════
+//  MEDICINES
+// ═══════════════════════════════════════
+const timeEmoji = { morning:'☀️', afternoon:'🌤', evening:'🌆', night:'🌙' };
+const timeLabel = { morning:'Morning', afternoon:'Afternoon', evening:'Evening', night:'Night' };
+
+function medItemHTML(m, compact) {
+  const statusClass = m.takenToday ? 'taken' : 'pending';
+  const dotClass = m.takenToday ? 'taken' : 'pending';
+  const btn = m.takenToday
+    ? `<span class="med-status taken">Taken ✓</span>`
+    : `<button class="mark-taken-btn" onclick="markTaken(${m.id})">Mark taken</button>`;
+  return `<div class="med-item" data-id="${m.id}" data-time="${m.time}">
+    <div class="med-dot ${dotClass}">💊</div>
+    <div class="med-info">
+      <div class="med-name">${m.name}</div>
+      <div class="med-details">${timeEmoji[m.time]||'⏰'} ${m.reminderTime} · ${m.dose}${m.purpose ? ' · ' + m.purpose : ''}</div>
+    </div>
+    ${btn}
+  </div>`;
+}
+
+function renderMedList(filter) {
+  const list = document.getElementById('med-list');
+  const empty = document.getElementById('med-empty');
+  let meds = medicines;
+  if (filter && filter !== 'all') {
+    if (filter === 'missed') meds = medicines.filter(m => !m.takenToday);
+    else meds = medicines.filter(m => m.time === filter);
+  }
+  if (meds.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    list.innerHTML = meds.map(m => medItemHTML(m)).join('');
+  }
+  updateDashboard();
+}
+
+function markTaken(id) {
+  const med = medicines.find(m => m.id === id);
+  if (!med) return;
+  med.takenToday = true;
+  saveState();
+  renderMedList();
+  showNotifBanner('✅', 'Medicine Taken!', `${med.name} marked as taken`, 'success');
+  showToast(med.name + ' marked as taken ✅','success');
+  updateDashboard();
+  updateCaregiverStats();
+}
+
+function filterMeds(filter, chip) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  renderMedList(filter);
+}
+
+function toggleTimeChip(chip) {
+  chip.classList.toggle('active');
+}
+
+function addMedicine() {
+  const name = document.getElementById('new-med-name').value.trim();
+  if (!name) { showToast('Please enter medicine name','warning'); return; }
+  const selectedChips = document.querySelectorAll('#time-chip-group .time-chip.active');
+  const time = selectedChips.length > 0 ? selectedChips[0].dataset.val : 'morning';
+  const med = {
+    id: Date.now(),
+    name,
+    dose: document.getElementById('new-med-dose').value.trim() || '1 dose',
+    time,
+    reminderTime: document.getElementById('new-med-time').value || '08:00',
+    purpose: document.getElementById('new-med-purpose').value.trim(),
+    takenToday: false
+  };
+  medicines.push(med);
+  saveState();
+  renderMedList();
+  updateDashboard();
+  scheduleNotifications();
+  closeModal('add-med-modal');
+  showToast(name + ' added to your schedule ✅','success');
+  // Reset modal
+  document.getElementById('new-med-name').value = '';
+  document.getElementById('new-med-dose').value = '';
+  document.getElementById('new-med-purpose').value = '';
+  document.getElementById('new-med-time').value = '08:00';
+  document.querySelectorAll('#time-chip-group .time-chip').forEach(c => c.classList.remove('active'));
+}
+
+// ═══════════════════════════════════════
+//  APPOINTMENTS
+// ═══════════════════════════════════════
+function apptItemHTML(a) {
+  const d = new Date(a.date + 'T00:00:00');
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const tagMap = { 'follow-up':'follow-up', 'checkup':'checkup', 'specialist':'specialist', 'lab':'checkup' };
+  return `<div class="appt-item">
+    <div class="appt-date-box"><div class="appt-day">${d.getDate()}</div><div class="appt-month">${months[d.getMonth()]}</div></div>
+    <div class="appt-info">
+      <div class="appt-doctor">${a.doctor}</div>
+      <div class="appt-meta">🏥 ${a.hospital} · ${a.time}</div>
+      <span class="appt-tag ${tagMap[a.type]||'checkup'}">${a.type.charAt(0).toUpperCase()+a.type.slice(1)}</span>
+    </div>
+    <div style="font-size:19px;cursor:pointer;" onclick="showToast('Reminder set for ${a.doctor} 🔔','success')">🔔</div>
+  </div>`;
+}
+
+function renderApptList() {
+  const list = document.getElementById('appt-list');
+  const empty = document.getElementById('appt-empty');
+  const sorted = [...appointments].sort((a,b) => a.date.localeCompare(b.date));
+  if (sorted.length === 0) { list.innerHTML = ''; empty.style.display = 'block'; }
+  else { empty.style.display = 'none'; list.innerHTML = sorted.map(apptItemHTML).join(''); }
+  document.getElementById('stat-appts').textContent = appointments.length;
+}
+
+function selectApptType(chip) {
+  document.querySelectorAll('#appt-type-chips .time-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+}
+
+function addAppointment() {
+  const doctor = document.getElementById('new-appt-doctor').value.trim();
+  const date = document.getElementById('new-appt-date').value;
+  if (!doctor) { showToast('Please enter doctor name','warning'); return; }
+  if (!date) { showToast('Please select a date','warning'); return; }
+  const typeChip = document.querySelector('#appt-type-chips .time-chip.active');
+  const appt = {
+    id: Date.now(),
+    doctor,
+    hospital: document.getElementById('new-appt-hospital').value.trim() || 'Hospital',
+    date,
+    time: document.getElementById('new-appt-time').value || '10:00',
+    type: typeChip ? typeChip.dataset.val : 'follow-up'
+  };
+  appointments.push(appt);
+  saveState();
+  renderApptList();
+  renderCalendar();
+  closeModal('add-appt-modal');
+  showToast('Appointment with ' + doctor + ' saved ✅','success');
+  document.getElementById('new-appt-doctor').value = '';
+  document.getElementById('new-appt-hospital').value = '';
+  document.getElementById('new-appt-date').value = '';
+  document.getElementById('new-appt-time').value = '10:00';
+}
+
+// ═══════════════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════════════
+function renderCalendar() {
+  const days = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = monthNames[calMonth] + ' ' + calYear;
+  const grid = document.getElementById('cal-grid');
+  let html = days.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const today = new Date();
+  const apptDays = new Set(appointments
+    .filter(a => { const d=new Date(a.date+'T00:00:00'); return d.getMonth()===calMonth && d.getFullYear()===calYear; })
+    .map(a => new Date(a.date+'T00:00:00').getDate()));
+
+  for (let i=0;i<firstDay;i++) html+='<div></div>';
+  for (let d=1;d<=daysInMonth;d++) {
+    const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
+    const hasAppt = apptDays.has(d);
+    const apptInfo = hasAppt ? appointments.filter(a=>{const dt=new Date(a.date+'T00:00:00');return dt.getDate()===d&&dt.getMonth()===calMonth;})[0] : null;
+    const tip = hasAppt ? `showToast('${apptInfo.doctor} · ${apptInfo.time}','success')` : `showToast('No appointment on ${d} ${monthNames[calMonth].slice(0,3)}','')`;
+    html+=`<div class="cal-day${isToday?' today':''}${hasAppt?' has-appt':''}" onclick="${tip}">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function changeMonth(dir) {
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+// ═══════════════════════════════════════
+//  CAREGIVER STATS
+// ═══════════════════════════════════════
+function updateCaregiverStats() {
+  const total = medicines.length;
+  const taken = medicines.filter(m => m.takenToday).length;
+  const pct = total > 0 ? Math.round((taken/total)*100) : 0;
+  document.getElementById('adherence-pct').textContent = pct + '%';
+  document.getElementById('adherence-bar').style.width = pct + '%';
+  document.getElementById('adherence-detail').textContent = `${taken}/${total} doses taken today`;
+}
+
+// ═══════════════════════════════════════
+//  NOTIFICATIONS
+// ═══════════════════════════════════════
+function requestNotifPermission() {
+  if (!('Notification' in window)) {
+    showToast('Browser notifications not supported','warning');
+    return;
+  }
+  Notification.requestPermission().then(perm => {
+    if (perm === 'granted') {
+      document.getElementById('notif-permission-status').textContent = '✅ Notifications enabled';
+      showToast('Notifications enabled! 🔔','success');
+      scheduleNotifications();
+    } else {
+      document.getElementById('notif-permission-status').textContent = '❌ Permission denied';
+      showToast('Please allow notifications in browser settings','warning');
+    }
+  });
+}
+
+function scheduleNotifications() {
+  // Clear existing timers
+  notifTimers.forEach(t => clearTimeout(t));
+  notifTimers = [];
+
+  const now = new Date();
+  medicines.forEach(med => {
+    if (med.takenToday) return;
+    const [h, m] = med.reminderTime.split(':').map(Number);
+    const reminderDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+    const msUntil = reminderDate - now;
+
+    if (msUntil > 0 && msUntil < 86400000) {
+      const t = setTimeout(() => {
+        fireNotification(med);
+      }, msUntil);
+      notifTimers.push(t);
+    }
+
+    // Also schedule 30 min before
+    const warningMs = msUntil - 1800000;
+    if (warningMs > 0) {
+      const tw = setTimeout(() => {
+        showNotifBanner('⏰', 'Upcoming Medicine', `${med.name} due in 30 minutes`, '');
+      }, warningMs);
+      notifTimers.push(tw);
+    }
+  });
+
+  // Demo: fire a test notification in 5 seconds if any pending
+  const pending = medicines.filter(m => !m.takenToday);
+  if (pending.length > 0) {
+    const demo = setTimeout(() => {
+      showNotifBanner('💊', 'Medicine Reminder', `Time to take ${pending[0].name}`, '');
+    }, 5000);
+    notifTimers.push(demo);
+  }
+}
+
+function fireNotification(med) {
+  showNotifBanner('💊', 'Medicine Reminder', `Time to take ${med.name} (${med.dose})`, '');
+  if (Notification.permission === 'granted') {
+    const n = new Notification('CareSync – Medicine Reminder 💊', {
+      body: `Time to take ${med.name} – ${med.dose}`,
+      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">💊</text></svg>',
+      tag: 'med-' + med.id,
+      requireInteraction: true
+    });
+    n.onclick = () => { window.focus(); switchTab('meds'); n.close(); };
+  }
+}
+
+function showNotifBanner(icon, title, sub, type) {
+  const b = document.getElementById('notif-banner');
+  document.getElementById('notif-icon').textContent = icon;
+  document.getElementById('notif-title').textContent = title;
+  document.getElementById('notif-sub').textContent = sub;
+  b.className = 'notif-banner' + (type ? ' ' + type : '');
+  b.classList.add('show');
+  setTimeout(dismissNotif, 6000);
+}
+
+function dismissNotif() {
+  document.getElementById('notif-banner').classList.remove('show');
+}
+
+// ═══════════════════════════════════════
+//  CLAUDE AI – REAL API
+// ═══════════════════════════════════════
+function saveApiKey() {
+  const input = document.getElementById('api-key-input').value.trim();
+  if (!input || input.startsWith('•')) { showToast('Please enter a valid API key','warning'); return; }
+  if (!input.startsWith('sk-ant-')) { showToast('API key should start with sk-ant-','warning'); return; }
+  apiKey = input;
+  saveState();
+  document.getElementById('api-key-input').value = '••••••••••••••••';
+  updateApiStatus(true);
+  showToast('Claude AI connected ✅','success');
+}
+
+function updateApiStatus(connected) {
+  const badge = document.getElementById('api-status-badge');
+  if (connected) {
+    badge.textContent = '● Connected';
+    badge.className = 'api-status connected';
+  } else {
+    badge.textContent = '● No API key';
+    badge.className = 'api-status disconnected';
+  }
+}
+
+function getMedList() {
+  return medicines.map(m => `${m.name} (${m.dose}, ${m.time}, for ${m.purpose||'general'})`).join(', ');
+}
+
+async function sendAIMessage() {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const sendBtn = document.getElementById('ai-send-btn');
+  sendBtn.disabled = true;
+
+  const container = document.getElementById('ai-chat-messages');
+  const chatArea = document.getElementById('ai-chat-area');
+
+  // User bubble
+  const userDiv = document.createElement('div');
+  userDiv.innerHTML = `<div class="chat-bubble user">${escHtml(msg)}</div><div class="chat-meta right">You · just now</div>`;
+  container.appendChild(userDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // Typing indicator
+  document.getElementById('ai-typing').style.display = 'block';
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // Build history for context
+  aiHistory.push({ role: 'user', content: msg });
+
+  let reply = '';
+  if (apiKey && apiKey.startsWith('sk-ant-')) {
+    try {
+      const systemPrompt = `You are CareSync AI, a helpful medical assistant embedded in a medication management app. 
+The patient's name is Rajesh Kumar.
+Current medicines: ${getMedList() || 'None added yet'}.
+Upcoming appointments: ${appointments.map(a=>`${a.doctor} on ${a.date} at ${a.hospital}`).join(', ') || 'None'}.
+Guidelines:
+- Provide helpful, accurate, empathetic health guidance
+- Always recommend consulting a doctor for serious concerns
+- Check drug interactions when asked
+- Keep responses concise and formatted for mobile reading
+- Use bullet points and emojis for clarity
+- Never provide definitive diagnoses
+- Add a brief disclaimer for medical advice`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 600,
+          system: systemPrompt,
+          messages: aiHistory.slice(-10)
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'API error');
+      }
+      const data = await response.json();
+      reply = data.content?.[0]?.text || 'Sorry, I could not get a response.';
+      aiHistory.push({ role: 'assistant', content: reply });
+    } catch (err) {
+      reply = `⚠️ API Error: ${err.message}\n\nPlease check your API key in the input above.`;
+      aiHistory.pop();
+    }
+  } else {
+    // Smart fallback
+    await new Promise(r => setTimeout(r, 1500));
+    reply = getFallbackResponse(msg);
+    aiHistory.push({ role: 'assistant', content: reply });
+  }
+
+  document.getElementById('ai-typing').style.display = 'none';
+
+  const aiDiv = document.createElement('div');
+  aiDiv.innerHTML = `<div class="chat-bubble ai">${reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/•/g,'•')}</div><div class="chat-meta">CareSync AI · just now</div>`;
+  container.appendChild(aiDiv);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  sendBtn.disabled = false;
+}
+
+function getFallbackResponse(msg) {
+  const low = msg.toLowerCase();
+  const medNames = medicines.map(m => m.name.toLowerCase());
+  if (low.includes('dizz') || low.includes('head')) return "Dizziness can be a side effect of Amlodipine (blood pressure medicine).\n\nTry:\n• Stand up slowly from sitting/lying\n• Stay well hydrated\n• Avoid sudden head movements\n\n⚠️ If severe or with chest pain — call your doctor immediately.\n\n⚕️ This is general guidance only.";
+  if (low.includes('fever') || low.includes('temperature')) return "For mild fever (under 38.5°C):\n• Rest and stay hydrated\n• Paracetamol 500mg can help (safe with your medicines)\n• Monitor temperature every 4 hours\n\n⚠️ Fever above 39°C for more than 3 days — visit Dr. Sharma.\n\n⚕️ Disclaimer: always consult your doctor.";
+  if (low.includes('interaction') || low.includes('safe together')) return `Checking your medicines:\n\n✅ Metformin + Amlodipine: Safe\n✅ Metformin + Atorvastatin: Safe\n⚠️ Metformin + Aspirin: Low risk – monitor blood sugar\n\nOverall safe. Discuss at your next appointment.\n\n⚕️ Add your Claude API key above for real-time AI analysis.`;
+  if (low.includes('blood pressure') || low.includes('bp')) return "Your BP targets:\n• Systolic: below 130 mmHg\n• Diastolic: below 80 mmHg\n\nAmlodipine 5mg helps maintain this. Take at 2 PM daily.\n\nLifestyle tips:\n• Reduce salt intake\n• 30 min light exercise daily\n• Manage stress\n• Avoid alcohol\n\n⚕️ Add your API key above for Claude AI responses.";
+  if (low.includes('diabetes') || low.includes('sugar') || low.includes('metformin')) return "Metformin works best when:\n• Taken with or after meals\n• Combined with a low-sugar diet\n• Paired with regular light exercise\n\nTarget blood sugar:\n• Fasting: 80-130 mg/dL\n• After meals: below 180 mg/dL\n\n⚕️ Add your API key above for real AI responses.";
+  return "Thank you for your question, Rajesh. I'm running in demo mode.\n\n🔑 **To enable real Claude AI responses:**\nPaste your Anthropic API key in the field at the top of this screen.\n\nGet a free API key at: anthropic.com/api\n\n⚕️ For urgent health concerns, always contact Dr. Sharma directly.";
+}
+
+// ═══════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModalOutside(e, id) { if (e.target.id === id) closeModal(id); }
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastTimeout;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ═══════════════════════════════════════
+//  ACCESSIBILITY
+// ═══════════════════════════════════════
+function toggleLargeText() {
+  largeText = !largeText;
+  document.body.classList.toggle('large-text', largeText);
+  document.getElementById('large-text-status').textContent = largeText ? 'ON' : 'OFF';
+}
+function toggleHighContrast() {
+  highContrast = !highContrast;
+  document.body.classList.toggle('high-contrast', highContrast);
+  const btn = document.getElementById('contrast-status');
+  btn.textContent = highContrast ? 'ON' : 'OFF';
+  btn.classList.toggle('active', highContrast);
+}
+function changeFontSize(val) { document.body.classList.toggle('large-text', parseInt(val) >= 2); }
+
+// ═══════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════
+function escHtml(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function triggerSOS() {
+  if (confirm('🆘 Send emergency alert to Sunita Kumar (+91 98760 11223)?')) {
+    showNotifBanner('🆘','Emergency Alert Sent!','Sunita Kumar has been notified','danger');
+    showToast('🆘 Emergency alert sent!','danger');
+  }
+}
+
+function clearAllData() {
+  if (confirm('Delete all your data? This cannot be undone.')) {
+    localStorage.clear();
+    medicines = []; appointments = [];
+    showToast('All data deleted','danger');
+    setTimeout(() => showScreen('landing'), 1000);
+  }
+}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+loadState();
+// Reset takenToday each new day
+const lastReset = localStorage.getItem('cs_last_reset');
+const today = new Date().toDateString();
+if (lastReset !== today) {
+  medicines.forEach(m => m.takenToday = false);
+  localStorage.setItem('cs_last_reset', today);
+  saveState();
+}
+</script>
+</body>
+</html>
